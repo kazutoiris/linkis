@@ -40,6 +40,10 @@ jobs:
     name: Code Format Check
     uses: ./.github/workflows/check-code-format.yml
 
+  qodana-check:
+    name: Qodana Check
+    uses: ./.github/workflows/check-qodana.yml
+
   third-party-dependencies-check:
     name: Third Party Dependencies Check
     uses: ./.github/workflows/check-third-party-dependencies.yml
@@ -61,6 +65,7 @@ jobs:
       - pg-sql-check
       - apache-rat-check
       - spotless-check
+      - qodana-check
       - third-party-dependencies-check
       - build-backend-test
       - build-frontend-test

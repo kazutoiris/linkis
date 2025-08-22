@@ -58,11 +58,11 @@ jobs:
           docker pull ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
           docker tag linkis-ldh:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis-ldh:dev
       - name: Set up chart-testing
-        uses: ./.github/actions/chart-testing-action
+        uses: helm/chart-testing-action@v2.7.0
 
 
       - name: Create Kind cluster
-        uses: ./.github/actions/kind-action
+        uses: helm/kind-action@v1
         with:
           config: ${{ env.KIND_CONFIG_PATH }}
           node_image: ${{ matrix.kubernetes-version }}

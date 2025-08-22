@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
@@ -48,10 +48,10 @@ jobs:
           cat ~/current_dependencies.txt
       - name: check third dependencies
         run: |
-          #by using commond join ,to check whether there are new third-party dependencies,compared with file(tool/dependencies/known-dependencies.txt) 
-          sort ${{ github.workspace }}/tool/dependencies/known-dependencies.txt > ~/known-dependencies.txt 
+          #by using commond join ,to check whether there are new third-party dependencies,compared with file(tool/dependencies/known-dependencies.txt)
+          sort ${{ github.workspace }}/tool/dependencies/known-dependencies.txt > ~/known-dependencies.txt
           join -t : -o 1.1 2.1 -a2 ~/known-dependencies.txt ~/current_dependencies.txt > ~/result.txt
-          #print new third-party dependencies name if it exists 
+          #print new third-party dependencies name if it exists
           awk -F ":" '{if($1=="")print $2" is not in file known-dependencies.txt!\n You can refer to this guide to repair it(你可以参考这个指引进行修复)：https://linkis.apache.org/zh-CN/docs/latest/development/development-specification/license"}' ~/result.txt
           result=`awk -F ":" '{if($1=="")print $2}'  ~/result.txt |wc -l`
           #if has new third-party,the Action will fail

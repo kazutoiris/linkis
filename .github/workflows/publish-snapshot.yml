@@ -32,7 +32,7 @@ jobs:
           - dev-1.6.0
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ matrix.branch }}
       - name: Setup JDK 8

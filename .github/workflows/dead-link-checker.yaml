@@ -18,7 +18,8 @@
 
 name: Dead Link Check
 
-on: [push, pull_request]
+on:
+  workflow_call:
 
 jobs:
   dead-links-check:

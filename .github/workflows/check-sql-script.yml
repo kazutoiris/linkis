@@ -17,7 +17,8 @@
 
 name: Sql Script Check
 
-on: [push, pull_request]
+on:
+  workflow_call:
 
 jobs:
   sql-check:
@@ -46,5 +47,3 @@ jobs:
           mysql $config  -D$MYSQL_DB -e "source ./linkis-dist/package/db/linkis_ddl.sql"
           mysql $config  -D$MYSQL_DB -e "source ./linkis-dist/package/db/linkis_dml.sql"
           mysql $config  -D$MYSQL_DB -e "show tables"
-
-

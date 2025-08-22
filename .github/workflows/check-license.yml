@@ -17,7 +17,8 @@
 
 name: License Check
 
-on: [push, pull_request]
+on:
+  workflow_call:
 
 jobs:
   apache-rat-check:

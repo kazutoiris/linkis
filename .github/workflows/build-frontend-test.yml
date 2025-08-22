@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 
-name: Build Frontend
+name: Build Frontend Test
 
-on: [push, pull_request]
-
+on:
+  workflow_call:
 
 jobs:
-  build-frontend:
+  build-frontend-test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -34,9 +34,16 @@ jobs:
         with:
           submodules: true
 
-      - uses: actions/cache@v4
+      - name: Get npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        id: npm-cache
         with:
-          path: ~/.npm
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-

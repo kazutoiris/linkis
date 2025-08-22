@@ -15,17 +15,22 @@
 # limitations under the License.
 #
 
-name: Publish Docker
+name: Build Docker
 on:
-  push:
-    branches: [master,dev-*]
+  workflow_call:
+    outputs:
+      version:
+        description: ""
+        value: ${{ jobs.build-docker.outputs.version }}
 
 env:
   MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
 
 jobs:
-  publish-docker:
+  build-docker:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.build-backend.outputs.version }}
     strategy:
       matrix:
         node-version: [16.0.0]
@@ -33,8 +38,8 @@ jobs:
     env:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
-      HUB: ghcr.io/${{ github.repository }}
-      LINKIS_VERSION: 1.8.0
+      HUB: ghcr.io/apache/linkis
+      LINKIS_VERSION: 1.7.0
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -43,56 +48,60 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: 8
-    - name: Cache local Maven repository
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+        cache: maven
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+    - name: Get npm cache directory
+      id: npm-cache-dir
+      shell: bash
+      run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
+    - name: Cache node modules
+      uses: actions/cache@v4
+      id: npm-cache
+      with:
+        path: ${{ steps.npm-cache-dir.outputs.dir }}
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java, javascript, python
     - name: Build frontend by node.js
       run: |
           cd linkis-web
           sed -i "/VUE_APP_MN_CONFIG_PREFIX/d" .env
           npm install
           npm run build
-
     - name: Build backend by maven
+      id: build-backend
       run: |
           ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
+          echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
     - name: Log in to the Container registry
       uses: docker/login-action@v1.10.0
       with:
-        registry: ${{ env.HUB }}
+        registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ github.token }}
     - name: Push Docker Image
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
         docker images
-        docker tag linkis:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
-        docker push ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
+        docker tag linkis:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
+        docker push ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
 
-        docker tag linkis:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis:latest
-        docker push ${{ env.HUB }}/linkis:latest
+        docker tag linkis-web:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+        docker push ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
 
-        docker tag linkis-web:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}
-        docker push ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}
-
-        docker tag linkis-web:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis-web:latest
-        docker push ${{ env.HUB }}/linkis-web:latest
-
-        docker tag linkis-ldh:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-        docker push ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-
-        docker tag linkis-ldh:${{ env.LINKIS_VERSION }} ${{ env.HUB }}/linkis-ldh:latest
-        docker push ${{ env.HUB }}/linkis-ldh:latest
+        docker tag linkis-ldh:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+        docker push ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2

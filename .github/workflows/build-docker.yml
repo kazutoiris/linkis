@@ -39,7 +39,6 @@ jobs:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
       HUB: ghcr.io/apache/linkis
-      LINKIS_VERSION: 1.7.0
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -95,13 +94,13 @@ jobs:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
         docker images
-        docker tag linkis:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
+        docker tag linkis:${{ steps.build-backend.outputs.version }} ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
         docker push ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
 
-        docker tag linkis-web:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+        docker tag linkis-web:${{ steps.build-backend.outputs.version }} ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
         docker push ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
 
-        docker tag linkis-ldh:${{ env.LINKIS_VERSION }} ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+        docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
         docker push ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

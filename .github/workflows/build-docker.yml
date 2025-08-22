@@ -69,7 +69,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: java, javascript, python
     - name: Build frontend by node.js
@@ -103,4 +103,4 @@ jobs:
         docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
         docker push ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3

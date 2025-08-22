@@ -32,9 +32,8 @@ jobs:
         node-version: [16.0.0]
     timeout-minutes: 90
     env:
-      TAG: ${{ github.sha }}-${{ matrix.node-version }}
+      TAG: ${{ github.sha }}
       SKIP_TEST: true
-      HUB: ghcr.io/${{ github.repository }}
       LINKIS_VERSION: ${{ inputs.linkis-version }}
     steps:
     - name: Set up QEMU
@@ -42,55 +41,28 @@ jobs:
     - name: Log in to the Container registry
       uses: docker/login-action@v1.10.0
       with:
-        registry: ${{ env.HUB }}
+        registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ github.token }}
     - name: Push Docker Image
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
-        docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}
-        
-        docker images
-      
-        docker tag linkis-web:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
-        docker push ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
-        docker tag linkis-web:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-web:latest
-        docker push ${{ env.HUB }}/linkis-web:latest
+        docker pull ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}
 
-  publish-backend-docker:
-    name: Publish Backend Docker
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    env:
-      TAG: ${{ github.sha }}
-      SKIP_TEST: true
-      HUB: ghcr.io/${{ github.repository }}
-      LINKIS_VERSION: ${{ inputs.linkis-version }}
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Log in to the Container registry
-        uses: docker/login-action@v1.10.0
-        with:
-          registry: ${{ env.HUB }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push Docker Image
-        env:
-          DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
-        run: |
-          docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
-          docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-          
-          docker images
-          
-          docker tag linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
-          docker push ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
-          docker tag linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:latest
-          docker push ${{ env.HUB }}/linkis:latest
-          
-          docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
-          docker push ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
-          docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:latest
-          docker push ${{ env.HUB }}/linkis-ldh:latest
+        docker images
+
+        docker tag linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ github.repository }}/linkis-web:${{ env.LINKIS_VERSION }}
+        docker push ${{ github.repository }}/linkis-web:${{ env.LINKIS_VERSION }}
+        docker tag linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ github.repository }}/linkis-web:latest
+        docker push ${{ github.repository }}/linkis-web:latest
+
+        docker tag linkis:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis:${{ env.LINKIS_VERSION }}
+        docker push ${{ github.repository }}/linkis:${{ env.LINKIS_VERSION }}
+        docker tag linkis:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis:latest
+        docker push ${{ github.repository }}/linkis:latest
+
+        docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis-ldh:${{ env.LINKIS_VERSION }}
+        docker push ${{ github.repository }}/linkis-ldh:${{ env.LINKIS_VERSION }}
+        docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis-ldh:latest
+        docker push ${{ github.repository }}/linkis-ldh:latest

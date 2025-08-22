@@ -46,15 +46,16 @@ jobs:
       - name: Pull Docker Image
         env:
           DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
+          HUB: ghcr.io/${{ github.repository }}
         run: |
-          docker pull ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }}
-          docker tag ${{ github.repository }}/linkis:${{ env.DOCKER_VERSION }} linkis:dev
+          docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
+          docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} linkis:dev
 
-          docker pull ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
-          docker tag ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} linkis-web:dev
+          docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+          docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} linkis-web:dev
 
-          docker pull ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-          docker tag ${{ github.repository }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
+          docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+          docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.7.0
 

@@ -35,6 +35,7 @@ jobs:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
       LINKIS_VERSION: ${{ inputs.linkis-version }}
+      HUB: ghcr.io/${{ github.repository }}
     steps:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -48,21 +49,23 @@ jobs:
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
-        docker pull ${{ github.repository }}/linkis-web:${{ env.DOCKER_VERSION }}
+        docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+        docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
+        docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
 
         docker images
 
-        docker tag linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ github.repository }}/linkis-web:${{ env.LINKIS_VERSION }}
-        docker push ${{ github.repository }}/linkis-web:${{ env.LINKIS_VERSION }}
-        docker tag linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ github.repository }}/linkis-web:latest
-        docker push ${{ github.repository }}/linkis-web:latest
+        docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
+        docker push ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
+        docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ env.HUB }}/linkis-web:latest
+        docker push ${{ env.HUB }}/linkis-web:latest
 
-        docker tag linkis:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis:${{ env.LINKIS_VERSION }}
-        docker push ${{ github.repository }}/linkis:${{ env.LINKIS_VERSION }}
-        docker tag linkis:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis:latest
-        docker push ${{ github.repository }}/linkis:latest
+        docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
+        docker push ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
+        docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:latest
+        docker push ${{ env.HUB }}/linkis:latest
 
-        docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis-ldh:${{ env.LINKIS_VERSION }}
-        docker push ${{ github.repository }}/linkis-ldh:${{ env.LINKIS_VERSION }}
-        docker tag linkis-ldh:${{ env.DOCKER_VERSION }} ${{ github.repository }}/linkis-ldh:latest
-        docker push ${{ github.repository }}/linkis-ldh:latest
+        docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
+        docker push ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
+        docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:latest
+        docker push ${{ env.HUB }}/linkis-ldh:latest

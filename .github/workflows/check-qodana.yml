@@ -29,6 +29,7 @@ jobs:
       - name: Qodana Scan
         uses: JetBrains/qodana-action@v2025.2
         with:
+          pr-mode: ${{ !startsWith(github.ref, 'refs/tags/') }}
           args: --linter,qodana-jvm-community
           use-annotations: false
           upload-result: true

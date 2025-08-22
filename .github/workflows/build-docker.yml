@@ -81,6 +81,9 @@ jobs:
       run: |
           ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
           echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+
     - name: Log in to the Container registry
       uses: docker/login-action@v3
       with:
@@ -101,5 +104,3 @@ jobs:
 
         docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
         docker push ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3

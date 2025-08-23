@@ -38,6 +38,11 @@ jobs:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
     steps:
+    - name: Maximize Build Space
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: false
+        large-packages: false
     - name: Checkout
       uses: actions/checkout@v5
     - name: Set up JDK 8
@@ -81,8 +86,6 @@ jobs:
       run: |
           ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
           echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
 
     - name: Log in to the Container registry
       uses: docker/login-action@v3
@@ -104,3 +107,6 @@ jobs:
 
         docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
         docker push ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3

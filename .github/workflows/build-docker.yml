@@ -67,6 +67,13 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-node-
+    - name: Cache Linkis apache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.linkis-build-cache
+        key: ${{ runner.os }}-linkis-apache-${{ hashFiles('linkis-dist/docker/scripts/prepare-ldh-image.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-linkis-apache-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
     - name: Set up Docker Buildx

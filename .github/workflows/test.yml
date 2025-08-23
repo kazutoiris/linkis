@@ -60,7 +60,7 @@ jobs:
           docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
       - name: Inject MySQL Connector/J
         run: |
-          ./linkis-dist/docker/scripts/make-linikis-image-with-mysql-jdbc.sh
+          bash ./linkis-dist/docker/scripts/make-linikis-image-with-mysql-jdbc.sh
           docker tag linkis:with-jdbc linkis:dev
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.7.0

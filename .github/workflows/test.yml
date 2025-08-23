@@ -1,0 +1,133 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Test
+
+on:
+  workflow_dispatch:
+
+
+#concurrency:
+#  group: test-${{ github.head_ref || github.run_id }}
+#  cancel-in-progress: true
+
+env:
+  KIND_CONFIG_PATH: './linkis-dist/helm/scripts/resources/kind-cluster.yaml'
+  KIND_CLUSTER_NAME: 'test-helm'
+  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.0.0]
+        kubernetes-version:
+          #          - 'kindest/node:v1.21.10'
+          - 'kindest/node:v1.23.4'
+    timeout-minutes: 90
+    env:
+      TAG: ${{ github.sha }}
+      SKIP_TEST: true
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v5
+      - name: Pull Docker Image
+        env:
+          DOCKER_VERSION: ${{ github.ref_name }}-008a823a221d05bb83d6e63ffbf3ebed7e5f97a5
+          HUB: ghcr.io/${{ github.repository }}
+        run: |
+          docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
+          docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} linkis:dev
+
+          docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+          docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} linkis-web:dev
+
+          docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+          docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
+      - name: Inject MySQL Connector/J
+        run: |
+          ./linkis-dist/docker/scripts/make-linikis-image-with-mysql-jdbc.sh
+          docker tag linkis:with-jdbc linkis:dev
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.7.0
+
+      - name: Create Kind cluster
+        uses: helm/kind-action@v1
+        with:
+          config: ${{ env.KIND_CONFIG_PATH }}
+          node_image: ${{ matrix.kubernetes-version }}
+          cluster_name: ${{ env.KIND_CLUSTER_NAME }}
+
+      - name: Start Linkis Service
+        run: |
+          # for debug Download the image directly first, then adjust it to active build
+          #ROOT_DIR=./linkis-dist/
+          #MIRRORS="ghcr.io"
+          #TAG="dev"
+          #docker pull ${MIRRORS}/apache/linkis/linkis-ldh:${TAG}
+          #docker pull ${MIRRORS}/apache/linkis/linkis:${TAG}
+          #docker pull ${MIRRORS}/apache/linkis/linkis-web:${TAG}
+          #docker tag  ${MIRRORS}/apache/linkis/linkis:${TAG} linkis:dev
+          #docker tag  ${MIRRORS}/apache/linkis/linkis-web:${TAG} linkis-web:dev
+          #docker tag  ${MIRRORS}/apache/linkis/linkis-ldh:${TAG} linkis-ldh:dev
+
+
+          #show image list
+          docker image ls
+          bash ./linkis-dist/helm/scripts/install-mysql.sh  false\
+              && bash ./linkis-dist/helm/scripts/install-ldh.sh true \
+              && bash ./linkis-dist/helm/scripts/install-charts-with-ldh.sh linkis linkis-demo true
+          n=0
+          sleep 60
+          while (($n<10))
+          do
+            kubectl get pods -A
+            n=$((n+1))
+            sleep 20
+          done
+
+          #show linkis pod logs
+          #POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-linkismanager -o jsonpath='{.items[0].metadata.name}'`
+          #kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
+          #POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-engineconnmanager -o jsonpath='{.items[0].metadata.name}'`
+          #kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
+        shell: bash
+
+      - name: Linkis-Cli Test
+        run: |
+          # Enable port-forward
+          bash ./linkis-dist/helm/scripts/remote-proxy.sh start
+          # Show port-forward list
+          bash ./linkis-dist/helm/scripts/remote-proxy.sh list
+          # Check if the web service is available
+          curl http://127.0.0.1:8088/
+
+          # Execute test by linkis-cli
+          POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-mg-gateway -o jsonpath='{.items[0].metadata.name}'`
+          kubectl exec -it -n linkis  ${POD_NAME} -- bash -c " \
+          sh /opt/linkis/bin/linkis-cli -engineType shell-1 -codeType shell -code \"pwd\" ";
+
+          kubectl exec -it -n linkis  ${POD_NAME} -- bash -c " \
+          sh /opt/linkis/bin/linkis-cli -engineType python-python2 -codeType python -code   'print(\"hello\")' "
+
+          #todo
+          #kubectl exec -it -n linkis  ${POD_NAME} -- bash -c " \
+          #sh /opt/linkis/bin/linkis-cli -engineType hive-3.1.3 -codeType hql -code   'show databases' "
+
+          #kubectl exec -it -n linkis  ${POD_NAME} -- bash -c " \
+          #sh /opt/linkis/bin/linkis-cli -engineType spark-3.2.1 -codeType sql -code   'show databases' "
+        shell: bash

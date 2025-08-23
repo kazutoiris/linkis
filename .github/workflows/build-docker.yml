@@ -84,7 +84,7 @@ jobs:
     - name: Build backend by maven
       id: build-backend
       run: |
-          ./mvnw install -Pdocker -Dmysql.connector.scope=compile -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
+          ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
           echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
 
     - name: Log in to the Container registry

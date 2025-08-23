@@ -43,11 +43,6 @@ jobs:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
     steps:
-      - name: Maximize Build Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
       - name: Checkout source
         uses: actions/checkout@v5
       - name: Pull Docker Image
@@ -102,8 +97,8 @@ jobs:
           done
 
           #show linkis pod logs
-          POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-linkismanager -o jsonpath='{.items[0].metadata.name}'`
-          kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
+          #POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-linkismanager -o jsonpath='{.items[0].metadata.name}'`
+          #kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
           #POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-engineconnmanager -o jsonpath='{.items[0].metadata.name}'`
           #kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
         shell: bash

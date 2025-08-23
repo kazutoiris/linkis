@@ -45,6 +45,13 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v5
+      - name: Cache Linkis apache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.linkis-build-cache
+          key: ${{ runner.os }}-linkis-mysql-connector-${{ hashFiles('linkis-dist/docker/scripts/make-linkis-image-with-mysql-jdbc.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-linkis-mysql-connector-
       - name: Pull Docker Image
         env:
           DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
@@ -60,7 +67,7 @@ jobs:
           docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
       - name: Inject MySQL Connector/J
         run: |
-          ./linkis-dist/docker/scripts/make-linikis-image-with-mysql-jdbc.sh
+          ./linkis-dist/docker/scripts/make-linkis-image-with-mysql-jdbc.sh
           docker tag linkis:with-jdbc linkis:dev
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.7.0

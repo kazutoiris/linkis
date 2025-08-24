@@ -118,7 +118,6 @@ jobs:
 
     - name: Clean up
       run: |
-        docker rmi -f $(docker images -aq)
         rm -rf *.tar.gz
 
     - name: Perform CodeQL Analysis

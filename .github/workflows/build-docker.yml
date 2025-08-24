@@ -94,26 +94,32 @@ jobs:
           ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
           echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ github.token }}
     - name: Push Docker Image
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
         HUB: ghcr.io/${{ github.repository }}
       run: |
         docker images
-        docker tag linkis:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
-        docker push ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
+        docker tag linkis:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis:dev
+        docker save linkis:dev | gzip > linkis.tar.gz
+        docker tag linkis-web:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-web:dev
+        docker save linkis-web:dev | gzip > linkis-web.tar.gz
+        docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-ldh:dev
+        docker save linkis-ldh:dev | gzip > linkis-ldh.tar.gz
 
-        docker tag linkis-web:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
-        docker push ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
+    - name: Upload Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: image
+        path: |
+          linkis.tar.gz
+          linkis-web.tar.gz
+          linkis-ldh.tar.gz
 
-        docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-        docker push ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
+    - name: Clean up
+      run: |
+        docker rmi -f $(docker images -aq)
+        rm -rf *.tar.gz
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

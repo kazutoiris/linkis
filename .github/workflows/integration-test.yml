@@ -52,19 +52,18 @@ jobs:
           key: ${{ runner.os }}-linkis-mysql-connector-${{ hashFiles('linkis-dist/docker/scripts/make-linkis-image-with-mysql-jdbc.sh') }}
           restore-keys: |
             ${{ runner.os }}-linkis-mysql-connector-
-      - name: Pull Docker Image
+      - name: Download Image
+        uses: actions/download-artifact@v5
+        with:
+          name: image
+      - name: Load Docker Image
         env:
           DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
           HUB: ghcr.io/${{ github.repository }}
         run: |
-          docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
-          docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} linkis:dev
-
-          docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
-          docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} linkis-web:dev
-
-          docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-          docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} linkis-ldh:dev
+          gunzip -c linkis.tar.gz | docker load
+          gunzip -c linkis-web.tar.gz | docker load
+          gunzip -c linkis-ldh.tar.gz | docker load
       - name: Inject MySQL Connector/J
         run: |
           ./linkis-dist/docker/scripts/make-linkis-image-with-mysql-jdbc.sh

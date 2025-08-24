@@ -45,27 +45,33 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ github.token }}
+    - name: Download Image
+      uses: actions/download-artifact@v5
+      with:
+        name: image
+    - name: Load Docker Image
+      env:
+        DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
+        HUB: ghcr.io/${{ github.repository }}
+      run: |
+        gunzip -c linkis.tar.gz | docker load
+        gunzip -c linkis-web.tar.gz | docker load
+        gunzip -c linkis-ldh.tar.gz | docker load
     - name: Push Docker Image
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
-        docker pull ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }}
-        docker pull ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }}
-        docker pull ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }}
-
-        docker images
-
-        docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
+        docker tag linkis-web:dev ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
         docker push ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
-        docker tag ${{ env.HUB }}/linkis-web:${{ env.DOCKER_VERSION }}-${{ matrix.node-version }} ${{ env.HUB }}/linkis-web:latest
+        docker tag linkis-web:dev ${{ env.HUB }}/linkis-web:latest
         docker push ${{ env.HUB }}/linkis-web:latest
 
-        docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
+        docker tag linkis:dev ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
         docker push ${{ env.HUB }}/linkis:${{ env.LINKIS_VERSION }}
-        docker tag ${{ env.HUB }}/linkis:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis:latest
+        docker tag linkis:dev ${{ env.HUB }}/linkis:latest
         docker push ${{ env.HUB }}/linkis:latest
 
-        docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
+        docker tag linkis-ldh:dev ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
         docker push ${{ env.HUB }}/linkis-ldh:${{ env.LINKIS_VERSION }}
-        docker tag ${{ env.HUB }}/linkis-ldh:${{ env.DOCKER_VERSION }} ${{ env.HUB }}/linkis-ldh:latest
+        docker tag linkis-ldh:dev ${{ env.HUB }}/linkis-ldh:latest
         docker push ${{ env.HUB }}/linkis-ldh:latest

@@ -58,8 +58,6 @@ jobs:
         gunzip -c linkis-web.tar.gz | docker load
         gunzip -c linkis-ldh.tar.gz | docker load
     - name: Push Docker Image
-      env:
-        DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
       run: |
         docker tag linkis-web:dev ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}
         docker push ${{ env.HUB }}/linkis-web:${{ env.LINKIS_VERSION }}

@@ -94,17 +94,13 @@ jobs:
           ./mvnw install -Pdocker -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
           echo "version=$(mvn help:evaluate -Dexpression=revision -q -DforceStdout)" >> $GITHUB_OUTPUT
 
-    - name: Push Docker Image
+    - name: Export Docker Image
       env:
         DOCKER_VERSION: ${{ github.ref_name }}-${{ github.sha }}
-        HUB: ghcr.io/${{ github.repository }}
       run: |
         docker images
-        docker tag linkis:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis:dev
         docker save linkis:dev | gzip > linkis.tar.gz
-        docker tag linkis-web:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-web:dev
         docker save linkis-web:dev | gzip > linkis-web.tar.gz
-        docker tag linkis-ldh:${{ steps.build-backend.outputs.version }} ${{ env.HUB }}/linkis-ldh:dev
         docker save linkis-ldh:dev | gzip > linkis-ldh.tar.gz
 
     - name: Upload Image

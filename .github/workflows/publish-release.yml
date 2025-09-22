@@ -51,6 +51,8 @@ jobs:
         id: get_version
 
       - name: Publish JAR - ${{ github.ref_name }}
+        env:
+            MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
           ./mvnw versions:set -Drevision={{steps.get_version.outputs.version}} -DgenerateBackupPoms=false
           ./mvnw -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10

@@ -40,14 +40,17 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           cache: maven
-  
+
+      - name: Test
+        run: |
+          cat ~/.m2/settings.xml
+
       - name: Publish JAR - ${{ github.ref_name }}
         env: 
           MAVEN_USERNAME: MAVEN_USERNAME
           MAVEN_PASSWORD: MAVEN_PASSWORD
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
-          cat ~/.m2/settings.xml
           ./mvnw versions:set -Drevision=${{ github.ref_name }} -DgenerateBackupPoms=false
           ./mvnw --batch-mode -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
 

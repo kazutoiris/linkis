@@ -39,7 +39,7 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           cache: "maven"
-        env:
+        env: &build
           MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
@@ -51,8 +51,7 @@ jobs:
         id: get_version
 
       - name: Publish JAR - ${{ github.ref_name }}
-        env:
-            MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        env: *build
         run: |
           ./mvnw versions:set -Drevision={{steps.get_version.outputs.version}} -DgenerateBackupPoms=false
           ./mvnw -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10

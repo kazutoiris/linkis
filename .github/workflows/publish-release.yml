@@ -53,7 +53,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
           ./mvnw versions:set -Drevision={{steps.get_version.outputs.version}} -DgenerateBackupPoms=false
-          ./mvnw --batch-mode -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
+          ./mvnw -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
 
       - name: Archive Git Repository
         run: |

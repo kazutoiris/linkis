@@ -52,7 +52,6 @@ jobs:
 
       - name: Publish JAR - ${{ github.ref_name }}
         run: |
-          ./mvnw clean install -Dmaven.javadoc.skip=true
           ./mvnw versions:set -Drevision={{steps.get_version.outputs.version}} -DgenerateBackupPoms=false
           ./mvnw -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
 

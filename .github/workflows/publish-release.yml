@@ -21,6 +21,7 @@ on:
   push:
     tags:
       - "*"
+
 jobs:
   publish-jar:
     name: Publish JAR
@@ -34,37 +35,35 @@ jobs:
         with:
           distribution: temurin
           java-version: 8
-          server-id: local
+          server-id: apache.releases.https
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           cache: maven
 
-      - name: Test
-        run: |
-          cat ~/.m2/settings.xml
-
-      - name: Publish JAR - ${{ github.ref_name }}
-        env: 
-          MAVEN_USERNAME: MAVEN_USERNAME
-          MAVEN_PASSWORD: MAVEN_PASSWORD
+      - name: Publish
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
           ./mvnw versions:set -Drevision=${{ github.ref_name }} -DgenerateBackupPoms=false
-          ./mvnw --batch-mode -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
+          ./mvnw deploy --batch-mode -DskipTests -Prelease -Dmaven.javadoc.skip=true -DretryFailedDeploymentCount=10
+          mv linkis-dist/target/apache-linkis-*-bin.tar.gz .
 
-      - name: Archive Git Repository
+      - name: Archive git repository
         run: |
           git archive --format=tar.gz -o apache-linkis-${{ github.ref_name }}-src.tar.gz --prefix=apache-linkis-${{ github.ref_name }}-src/ HEAD
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: jar
+          if-no-files-found: error
           path: |
             apache-linkis-*-src.tar.gz
-            linkis-dist/target/apache-linkis-*-bin.tar.gz
+            apache-linkis-*-bin.tar.gz
 
   publish-web:
     name: Publish Web
@@ -80,20 +79,21 @@ jobs:
 
       - name: Build frontend by node.js
         run: |
-            cd linkis-web
-            sed -i "/VUE_APP_MN_CONFIG_PREFIX/d" .env
-            npm install
-            npm run build
+          cd linkis-web
+          sed -i "/VUE_APP_MN_CONFIG_PREFIX/d" .env
+          npm install
+          npm run build
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: web
+          if-no-files-found: error
           path: |
             linkis-web/apache-linkis-*-web-bin.tar.gz
 
-  publish-release:
-    name: Publish Release
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
     needs:
       - publish-jar
@@ -105,17 +105,17 @@ jobs:
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 
-      - name: Download Artifact
+      - name: Download artifact
         uses: actions/download-artifact@v5
         with:
           merge-multiple: true
 
-      - name: Signature
+      - name: Make signatures
         run: |
           for i in *.tar.gz; do echo $i; gpg --armor --output $i.asc --detach-sig $i ; done
           for i in *.tar.gz; do echo $i; sha512sum  $i > $i.sha512 ; done
 
-      - name: Create Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: '*'
+          files: "*"

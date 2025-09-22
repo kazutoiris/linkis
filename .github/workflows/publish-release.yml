@@ -38,21 +38,16 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-          cache: "maven"
+          cache: maven
   
-      - name: Get Version
-        run: |
-          TAG="${{ github.ref_name }}"
-          echo "::set-output name=version::${TAG#*-}"
-        id: get_version
-
       - name: Publish JAR - ${{ github.ref_name }}
-        env: &build
-          MAVEN_USERNAME: ${{ secrets.OSS_SONATYPE_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSS_SONATYPE_PASSWORD }}
+        env: 
+          MAVEN_USERNAME: MAVEN_USERNAME
+          MAVEN_PASSWORD: MAVEN_PASSWORD
           MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
         run: |
-          ./mvnw versions:set -Drevision=${{steps.get_version.outputs.version}} -DgenerateBackupPoms=false
+          cat ~/.m2/settings.xml
+          ./mvnw versions:set -Drevision=${{ github.ref_name }} -DgenerateBackupPoms=false
           ./mvnw --batch-mode -DskipTests deploy -Prelease -Dmaven.javadoc.skip=true  -DretryFailedDeploymentCount=10
 
       - name: Archive Git Repository
@@ -64,8 +59,8 @@ jobs:
         with:
           name: jar
           path: |
-            apache-linkis-${{ github.ref_name }}-src.tar.gz
-            linkis-dist/target/apache-linkis-${{ github.ref_name }}-bin.tar.gz
+            apache-linkis-*-src.tar.gz
+            linkis-dist/target/apache-linkis-*-bin.tar.gz
 
   publish-web:
     runs-on: ubuntu-latest
@@ -90,7 +85,7 @@ jobs:
         with:
           name: web
           path: |
-            linkis-web/apache-linkis-${{ github.ref_name }}-web-bin.tar.gz
+            linkis-web/apache-linkis-*-web-bin.tar.gz
 
   publish-release:
     runs-on: ubuntu-latest

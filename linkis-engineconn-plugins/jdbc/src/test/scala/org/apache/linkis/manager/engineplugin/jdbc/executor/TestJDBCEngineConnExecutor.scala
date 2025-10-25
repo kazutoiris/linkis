@@ -109,7 +109,7 @@ class TestJDBCEngineConnExecutor {
       "--spring-conf",
       "logging.config=classpath:log4j2.xml",
       "--spring-conf",
-      "spring.profiles.active=engineconn",
+      "spring.config.activate.on-profile=engineconn",
       "--spring-conf",
       "server.port=35655",
       "--spring-conf",

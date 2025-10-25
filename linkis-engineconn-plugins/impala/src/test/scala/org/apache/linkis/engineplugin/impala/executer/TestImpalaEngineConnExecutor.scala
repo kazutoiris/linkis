@@ -81,7 +81,7 @@ class TestImpalaEngineConnExecutor {
       springConf,
       "logging.config=classpath:log4j2.xml",
       springConf,
-      "spring.profiles.active=engineconn",
+      "spring.config.activate.on-profile=engineconn",
       springConf,
       "server.port=35655",
       springConf,

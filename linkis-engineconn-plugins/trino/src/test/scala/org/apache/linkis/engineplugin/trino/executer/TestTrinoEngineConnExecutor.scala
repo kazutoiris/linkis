@@ -79,7 +79,7 @@ class TestTrinoEngineConnExecutor {
       springConf,
       "logging.config=classpath:log4j2.xml",
       springConf,
-      "spring.config.activate.on-profile=engineconn",
+      "spring.profiles.active=engineconn",
       springConf,
       "server.port=35655",
       springConf,

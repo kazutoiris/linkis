@@ -86,7 +86,7 @@ then
   export EUREKA_INSTALL_IP=$SERVER_IP
 fi
 
-SPRING_ARGS="$SPRING_ARGS --spring.config.activate.on-profile=eureka"
+SPRING_ARGS="$SPRING_ARGS --spring.profiles.active=eureka"
 
 echo  "=====Java Start Command====="
 

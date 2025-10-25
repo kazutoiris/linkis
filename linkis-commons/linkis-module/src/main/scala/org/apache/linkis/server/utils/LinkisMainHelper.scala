@@ -47,7 +47,7 @@ object LinkisMainHelper {
   def getExtraSpringOptions(profilesName: String): Array[String] = {
     val servletPath = ServerConfiguration.BDP_SERVER_RESTFUL_URI.getValue
     var resArr =
-      s"--spring.config.activate.on-profile=$profilesName" +: s"--spring.mvc.servlet.path=$servletPath" +: CommonVars.properties.asScala
+      s"--spring.profiles.active=$profilesName" +: s"--spring.mvc.servlet.path=$servletPath" +: CommonVars.properties.asScala
         .filter { case (k, v) => k != null && k.startsWith(SPRING_STAR) }
         .map { case (k, v) =>
           val realKey = k.substring(SPRING_STAR.length)

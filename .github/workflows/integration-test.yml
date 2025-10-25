@@ -159,8 +159,8 @@ jobs:
           #kubectl logs -n linkis  ${POD_NAME} -f --tail=10000
         shell: bash
 
-      - name: Setup Debug Session
-        uses: csexton/debugger-action@master
+      # - name: Setup Debug Session
+      #   uses: csexton/debugger-action@master
 
       - name: Linkis-Cli Test
         run: |

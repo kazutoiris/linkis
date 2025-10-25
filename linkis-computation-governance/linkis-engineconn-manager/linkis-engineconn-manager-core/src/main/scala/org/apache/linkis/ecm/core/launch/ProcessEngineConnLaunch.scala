@@ -200,7 +200,10 @@ trait ProcessEngineConnLaunch extends EngineConnLaunch with Logging {
     }
 
     var springConf =
-      Map[String, String]("server.port" -> engineConnPort, "spring.config.activate.on-profile" -> "engineconn")
+      Map[String, String](
+        "server.port" -> engineConnPort,
+        "spring.config.activate.on-profile" -> "engineconn"
+      )
     val properties =
       PortUtils.readFromProperties(Configuration.getLinkisHome + "/conf/version.properties")
     if (StringUtils.isNotBlank(properties.getProperty("version"))) {

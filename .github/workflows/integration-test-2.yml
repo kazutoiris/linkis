@@ -107,12 +107,12 @@ jobs:
 
       - name: Start Linkis Service
         run: |
-          docker pull ghcr.io/kazutoiris/linkis/linkis:latest
-          docker pull ghcr.io/kazutoiris/linkis/linkis-web:latest
-          docker pull ghcr.io/kazutoiris/linkis/linkis-ldh:latest
-          docker tag ghcr.io/kazutoiris/linkis/linkis:latest     linkis:dev
-          docker tag ghcr.io/kazutoiris/linkis/linkis-web:latest linkis-web:dev
-          docker tag ghcr.io/kazutoiris/linkis/linkis-ldh:latest linkis-ldh:dev
+          docker pull ghcr.io/kazutoiris/linkis/linkis:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c
+          docker pull ghcr.io/kazutoiris/linkis/linkis-web:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c
+          docker pull ghcr.io/kazutoiris/linkis/linkis-ldh:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c
+          docker tag ghcr.io/kazutoiris/linkis/linkis:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c     linkis:dev
+          docker tag ghcr.io/kazutoiris/linkis/linkis-web:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c linkis-web:dev
+          docker tag ghcr.io/kazutoiris/linkis/linkis-ldh:dev-1.9.0-test-base-new-1b6bb98f5754e1da00731ffe6de4e05e394de19c linkis-ldh:dev
 
           # for debug Download the image directly first, then adjust it to active build
           #ROOT_DIR=./linkis-dist/

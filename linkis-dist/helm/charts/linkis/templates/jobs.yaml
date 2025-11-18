@@ -28,7 +28,7 @@ spec:
           command:
             - /bin/bash
             - -ecx
-            - >-
+            - |-
               sed -i 's#@YARN_RESTFUL_URL#http://ldh.ldh.svc.cluster.local:8088#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
               sed -i 's#@HADOOP_VERSION#3.3.4#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
               sed -i 's#@YARN_AUTH_ENABLE#false#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"

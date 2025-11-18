@@ -15,41 +15,22 @@
 # limitations under the License.
 #
 
-name: Integration Test
+name: Test
 
 on:
   push:
-    branches: [master,dev-*]
+    branches: ["*"]
   pull_request:
-    branches: [master,dev-*]
+    branches: ["*"]
 
-#concurrency:
-#  group: test-${{ github.head_ref || github.run_id }}
-#  cancel-in-progress: true
-
-env:
-  KIND_CONFIG_PATH: './linkis-dist/helm/scripts/resources/kind-cluster.yaml'
-  KIND_CLUSTER_NAME: 'test-helm'
-  MAVEN_OPTS: -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false -Dmaven.wagon.http.retryHandler.class=standard -Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
 jobs:
-  integration-test:
+  test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.0.0]
-        kubernetes-version:
-          #          - 'kindest/node:v1.21.10'
-          - 'kindest/node:v1.23.4'
-    env:
-      TAG: ${{ github.sha }}
-      SKIP_TEST: true
-      HUB: ghcr.io/apache/linkis
-      LINKIS_VERSION: 1.8.0
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache Linkis apache dependencies
+      - name: Restore
         uses: actions/cache/restore@v4
         id: cache
         with:
@@ -58,6 +39,43 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-linkis-
 
-      - name: Check cache hit
+      - name: Download
         if: steps.cache.outputs.cache-hit != 'true'
-        run: exit 1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y aria2
+
+          mkdir -p linkis-build-cache
+
+          cd linkis-build-cache
+
+          cat > ../download-list.txt << EOF
+          https://archive.apache.org/dist/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
+          https://archive.apache.org/dist/hive/hive-3.1.3/apache-hive-3.1.3-bin.tar.gz
+          https://archive.apache.org/dist/spark/spark-3.2.1/spark-3.2.1-bin-hadoop3.2.tgz
+          https://archive.apache.org/dist/flink/flink-1.12.2/flink-1.12.2-bin-scala_2.11.tgz
+          https://archive.apache.org/dist/zookeeper/zookeeper-3.5.9/apache-zookeeper-3.5.9-bin.tar.gz
+          https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
+          EOF
+
+          aria2c -x 16 -s 16 -i ../download-list.txt \
+              --max-connection-per-server=16 \
+              --retry-wait=3 \
+              --max-tries=100 \
+              --continue=true
+
+      - name: Run
+        run: |
+            mkdir -p ~/.linkis-build-cache
+            cp -r linkis-build-cache/* ~/.linkis-build-cache
+      - name: Save
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.linkis-build-cache
+          key: ${{ runner.os }}-linkis-${{ hashFiles('linkis-dist/docker/scripts/prepare-ldh-image.sh') }}
+
+      - name: Save
+        uses: actions/cache/save@v4
+        with:
+          path: linkis-build-cache
+          key: ${{ runner.os }}-linkis-

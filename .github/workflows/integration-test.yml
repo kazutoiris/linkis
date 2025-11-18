@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache@v4
         id: cache
         with:
-          path: linkis-build-cache
+          path: ~/.linkis-build-cache
           key: ${{ runner.os }}-linkis-${{ hashFiles('linkis-dist/docker/scripts/prepare-ldh-image.sh') }}
           restore-keys: |
             ${{ runner.os }}-linkis-

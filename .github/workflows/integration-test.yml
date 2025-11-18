@@ -90,7 +90,6 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
       - name: Cache Linkis apache dependencies
         uses: actions/cache@v4
         with:
@@ -98,7 +97,6 @@ jobs:
           key: ${{ runner.os }}-linkis-${{ hashFiles('linkis-dist/docker/scripts/prepare-ldh-image.sh') }}
           restore-keys: |
             ${{ runner.os }}-linkis-
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:

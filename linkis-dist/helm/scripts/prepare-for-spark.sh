@@ -39,4 +39,4 @@ ECM_POD_SUBDOMAIN=`kubectl get pods -n linkis -l app.kubernetes.io/instance=link
 
 ECM_DNS="${ECM_POD_IP}   ${ECM_POD_NAME}.${ECM_POD_SUBDOMAIN}.linkis.svc.cluster.local"
 
-kubectl exec -it -n ldh ${LDH_POD_NAME} -- bash -c "echo ${ECM_DNS} |sudo tee --append  /etc/hosts"
+kubectl exec -n ldh ${LDH_POD_NAME} -- bash -c "echo ${ECM_DNS} |sudo tee --append  /etc/hosts"

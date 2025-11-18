@@ -27,10 +27,10 @@ ECM_POD_NAME=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-de
 kubectl exec -n ldh ${LDH_POD_NAME} -- tar -C /opt -cf - ldh | \
 kubectl exec -i -n linkis ${ECM_POD_NAME} -- tar -C /opt -xf - --no-same-owner
 
-kubectl exec -it -n linkis ${ECM_POD_NAME} -- bash -c "sudo mkdir -p /appcom/Install && sudo chmod 0777 /appcom/Install && ln -s /opt/ldh/current/spark /appcom/Install/spark"
-kubectl exec -it -n linkis ${ECM_POD_NAME} -- bash -c "echo 'export SPARK_HOME=/opt/ldh/current/spark' |sudo tee --append /etc/profile"
-kubectl exec -it -n linkis ${ECM_POD_NAME} -- bash -c "echo 'export PATH=\$SPARK_HOME/bin:\$PATH' |sudo tee --append  /etc/profile"
-kubectl exec -it -n linkis ${ECM_POD_NAME} -- bash -c "source /etc/profile"
+kubectl exec -n linkis ${ECM_POD_NAME} -- bash -c "sudo mkdir -p /appcom/Install && sudo chmod 0777 /appcom/Install && ln -s /opt/ldh/current/spark /appcom/Install/spark"
+kubectl exec -n linkis ${ECM_POD_NAME} -- bash -c "echo 'export SPARK_HOME=/opt/ldh/current/spark' |sudo tee --append /etc/profile"
+kubectl exec -n linkis ${ECM_POD_NAME} -- bash -c "echo 'export PATH=\$SPARK_HOME/bin:\$PATH' |sudo tee --append  /etc/profile"
+kubectl exec -n linkis ${ECM_POD_NAME} -- bash -c "source /etc/profile"
 
 # add ecm dns for ldh pod
 ECM_POD_IP=`kubectl get pods -n linkis -l app.kubernetes.io/instance=linkis-demo-cg-engineconnmanager -o jsonpath='{.items[0].status.podIP}'`

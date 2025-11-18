@@ -29,6 +29,15 @@ spec:
             - /bin/bash
             - -ecx
             - >-
+              sed -i 's#@YARN_RESTFUL_URL#http://ldh.ldh.svc.cluster.local:8088#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@HADOOP_VERSION#3.3.4#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_AUTH_ENABLE#false#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_AUTH_USER#hadoop#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_AUTH_PWD#123456#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_KERBEROS_ENABLE#false#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_PRINCIPAL_NAME#yarn/localhost@EXAMPLE.COM#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_KEYTAB_PATH#/etc/hadoop-conf/yarn.keytab#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
+              sed -i 's#@YARN_KRB5_PATH#/etc/krb5.keytab#g' {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"
               mysql -h{{ .Values.linkis.datasource.host }} -P{{ .Values.linkis.datasource.port }} -u{{ .Values.linkis.datasource.username }} -p{{ .Values.linkis.datasource.password }} --default-character-set=utf8 -e "CREATE DATABASE IF NOT EXISTS {{ .Values.linkis.datasource.database }} DEFAULT CHARSET utf8 COLLATE utf8_general_ci";
               mysql -h{{ .Values.linkis.datasource.host }} -P{{ .Values.linkis.datasource.port }} -u{{ .Values.linkis.datasource.username }} -p{{ .Values.linkis.datasource.password }} -D{{ .Values.linkis.datasource.database }}  --default-character-set=utf8 -e "source {{ .Values.linkis.locations.homeDir }}/db//linkis_ddl.sql";
               mysql -h{{ .Values.linkis.datasource.host }} -P{{ .Values.linkis.datasource.port }} -u{{ .Values.linkis.datasource.username }} -p{{ .Values.linkis.datasource.password }} -D{{ .Values.linkis.datasource.database }}  --default-character-set=utf8 -e "source {{ .Values.linkis.locations.homeDir }}/db//linkis_dml.sql"

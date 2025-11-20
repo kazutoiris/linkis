@@ -104,7 +104,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y aria2
 
-          mkdir -p ~/.linkis-build-cache
+          mkdir -p $HOME/.linkis-build-cache
 
           cat > /tmp/download-list.txt << EOF
           https://archive.apache.org/dist/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
@@ -116,7 +116,7 @@ jobs:
           EOF
 
           aria2c -x 16 -s 16 -i /tmp/download-list.txt \
-              --dir=~/.linkis-build-cache \
+              --dir=$HOME/.linkis-build-cache \
               --retry-wait=3 \
               --max-tries=10 \
               --continue=true

@@ -24,7 +24,7 @@ download() {
 
   if [ ! -f ${TAR_CACHE_ROOT}/${TAR_FILE} ]; then
     echo "- downloading ${TAR_FILE} to ${TAR_CACHE_ROOT} from ${TAR_URL}"
-    curl -L ${TAR_URL} -o ${TAR_CACHE_ROOT}/${TAR_FILE}
+    aria2c -x 16 -s 64 -m 3 --continue=true -o "${TAR_CACHE_ROOT}/${TAR_FILE}" "${TAR_URL}"
   else
     echo "- ${TAR_FILE} already exists in ${TAR_CACHE_ROOT}, downloading skipped."
   fi

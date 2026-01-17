@@ -101,6 +101,7 @@ jobs:
           sed -i "/VUE_APP_MN_CONFIG_PREFIX/d" .env
           npm install
           npm run build
+          sudo apt update && sudo apt install -y aria2
 
       - name: Build backend by maven
         run: |

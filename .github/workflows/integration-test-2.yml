@@ -37,7 +37,6 @@ jobs:
         kubernetes-version:
           #          - 'kindest/node:v1.21.10'
           - 'kindest/node:v1.23.4'
-    timeout-minutes: 90
     env:
       TAG: ${{ github.sha }}
       SKIP_TEST: true
@@ -105,7 +104,7 @@ jobs:
 
       - name: Build backend by maven
         run: |
-          ./mvnw -T 4C install -Pdocker -Dmysql.connector.scope=compile -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
+          ./mvnw install -Pdocker -Dmysql.connector.scope=compile -Dmaven.javadoc.skip=true -Dmaven.test.skip=true -Dlinkis.build.web=true -Dlinkis.build.ldh=true
 
       - name: Set up chart-testing
         uses: ./.github/actions/chart-testing-action
